@@ -1,0 +1,51 @@
+#领水网站https://testnet-faucet.reddio.com/
+
+import requests
+import json
+
+# 读取地址文件中的所有地址
+def read_addresses(file_path):
+    with open(file_path, 'r') as file:
+        addresses = file.readlines()
+    # 清理地址两端的空白字符
+    return [address.strip() for address in addresses]
+
+# 发送请求的函数
+def claim_funds(address):
+    url = "https://testnet-faucet.reddio.com/api/claim/new"
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://testnet-faucet.reddio.com",
+        "Referer": "https://testnet-faucet.reddio.com/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    }
+    payload = {
+        "address": address,
+        "others": False
+    }
+
+    # 发送 POST 请求
+    response = requests.post(url, headers=headers, json=payload)
+
+    # 检查请求是否成功
+    if response.status_code == 200:
+        try:
+            response_data = response.json()
+            if "claimed" in response_data:
+                print(f"成功领取钱包地址: {address}")
+            else:
+                print(f"钱包地址 {address} 领取失败")
+        except json.JSONDecodeError:
+            print(f"钱包地址 {address} 返回数据解析失败")
+    else:
+        print(f"请求失败，状态码: {response.status_code}，钱包地址: {address}")
+
+# 主函数
+def main():
+    addresses = read_addresses('address.txt')  # 从 address.txt 中读取地址
+    for address in addresses:
+        claim_funds(address)  # 对每个地址发送请求
+
+if __name__ == "__main__":
+    main()
